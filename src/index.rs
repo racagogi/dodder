@@ -42,56 +42,22 @@ pub fn write_index(index: &Index) {
 
 pub fn add_node(
     index: &mut Index,
-    name: String,
+    path: Option<&PathBuf>,
+    name: &String,
     extension: &str,
     status: Option<Status>,
     stime: Option<DateTime<Utc>>,
-    path: Option<&PathBuf>,
-    from_node: &PathBuf,
-    is_parent: bool,
+    position: &PathBuf,
     is_front: bool,
+    is_parent: bool,
 ) {
-    let parent_path = if is_parent {
-        index.get(from_node).expect("not exist parent");
-        from_node.to_owned()
+    let path = ensure_path(path, name, extension);
+    let mut node = make_node(name, &path, status, stime);
+    if is_parent {
+        add_node_parent(index, &path, &mut node, position, is_front);
     } else {
-        index
-            .get(from_node)
-            .unwrap()
-            .parent
-            .clone()
-            .expect("can not add root siddering")
-    };
-    let node_path = match path {
-        Some(p) => p.to_owned(),
-        None => make_file(&name, extension),
-    };
-
-    if let Some(_) = index.get(&node_path) {
-        eprint!("already exist node");
+        add_node_sibber(index, &path, &mut node, position, is_front);
     }
-
-    let mut node = make_node(name, &node_path, status, stime);
-    node.set_parent(&parent_path);
-    let parent = index.get(&parent_path).unwrap();
-    let i = if is_parent {
-        if is_front {
-            0
-        } else {
-            parent.child.len()
-        }
-    } else {
-        let sidder_i = parent.get_child(from_node).unwrap();
-        if is_front {
-            sidder_i
-        } else {
-            sidder_i + 1
-        }
-    };
-    let mut new_parent = parent.clone();
-    new_parent.add_child(i, &node_path);
-    index.insert(node_path, node);
-    index.insert(parent_path, new_parent);
 }
 
 pub fn remove_node(index: &mut Index, node: &PathBuf) {
@@ -105,20 +71,22 @@ pub fn remove_node(index: &mut Index, node: &PathBuf) {
 
 pub fn move_node(
     index: &mut Index,
-    node: &PathBuf,
-    old: &PathBuf,
-    new: &PathBuf,
+    key: &PathBuf,
+    position: &PathBuf,
     is_front: bool,
     is_parent: bool,
 ) {
-    if let Some(old_node) = index.get(old) {
-        if let Some(new_node) = index.get(new) {
-            if let Some(node_value) = index.get(node) {
-                todo!()
-            }
-        }
+    let mut node = index.get(key).expect("node not eixst").to_owned();
+    if is_parent {
+        add_node_parent(index, key, &mut node, position, is_front);
+    } else {
+        add_node_sibber(index, key, &mut node, position, is_front);
+    }
+    if let Some(v) = index.get_mut(&node.parent.unwrap()){
+        v.remove_child(key);
     }
 }
+
 pub fn add_link(index: &mut Index, a: &PathBuf, b: &PathBuf) {
     let a_node = index.get(a).unwrap();
     let b_node = index.get(b).unwrap();
@@ -169,8 +137,15 @@ fn make_file(name: &str, extension: &str) -> PathBuf {
     path
 }
 
+fn ensure_path(path: Option<&PathBuf>, name: &String, extension: &str) -> PathBuf {
+    match path {
+        Some(p) => p.to_owned(),
+        None => make_file(name, extension),
+    }
+}
+
 fn make_node(
-    name: String,
+    name: &String,
     path: &PathBuf,
     status: Option<Status>,
     stime: Option<DateTime<Utc>>,
@@ -190,6 +165,47 @@ fn make_node(
             Some(s) => s,
             None => Status::None,
         },
-        name,
+        name: name.to_owned(),
     }
+}
+
+fn add_node_sibber(
+    index: &mut Index,
+    key: &PathBuf,
+    node: &mut Node,
+    sibber: &PathBuf,
+    is_front: bool,
+) {
+    let sibber_node = index.get(sibber).unwrap();
+    let parent = sibber_node.parent.clone().unwrap();
+    let mut parent_node = index.get(&parent).unwrap().to_owned();
+    let i = parent_node.get_child(sibber).unwrap();
+    if is_front {
+        parent_node.add_child(i, key);
+    } else {
+        parent_node.add_child(i + 1, key);
+    }
+    node.set_parent(&parent);
+    node.set_parent(&parent);
+    index.insert(key.to_owned(), node.to_owned());
+    index.insert(parent.to_owned(), parent_node);
+}
+
+fn add_node_parent(
+    index: &mut Index,
+    key: &PathBuf,
+    node: &mut Node,
+    parent: &PathBuf,
+    is_front: bool,
+) {
+    let mut parent_node = index.get(parent).expect("not eixst parent").to_owned();
+    if is_front {
+        parent_node.add_child(0, key);
+    } else {
+        parent_node.add_child(parent_node.child.len(), key);
+    }
+    node.set_parent(parent);
+    node.set_parent(parent);
+    index.insert(key.to_owned(), node.to_owned());
+    index.insert(parent.to_owned(), parent_node);
 }

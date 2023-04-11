@@ -11,10 +11,10 @@ fn main() {
     println!("{index:?}");
     add_node(
         &mut index,
-        "toc".to_string(),
+        None,
+        &"toc".to_string(),
         "norg",
         Some(Status::Recurring),
-        None,
         None,
         &PathBuf::new().join("/"),
         true,

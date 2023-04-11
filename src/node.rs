@@ -51,6 +51,14 @@ impl Node {
             self.child.remove(i);
         }
     }
+
+    pub fn is_root(&self) -> bool {
+        if let  None = self.parent{
+            true
+        } else {
+            false
+        }
+    }
 }
 
 pub fn root() -> Node {
