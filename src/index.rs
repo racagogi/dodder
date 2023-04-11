@@ -6,7 +6,7 @@ use std::{
     time::SystemTime,
 };
 
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, NaiveDateTime, Utc, Local, TimeZone, Offset};
 
 use crate::node::{Node, Status};
 
@@ -46,7 +46,7 @@ pub fn add_node(
     name: &String,
     extension: &str,
     status: Option<Status>,
-    stime: Option<DateTime<Utc>>,
+    stime: Option<DateTime<Local>>,
     position: &PathBuf,
     is_front: bool,
     is_parent: bool,
@@ -66,7 +66,10 @@ pub fn remove_node(index: &mut Index, node: &PathBuf) {
             remove_node(index, c)
         }
     }
-    index.iter_mut().for_each(|(_, v)| v.remove_child(node));
+    index.iter_mut().for_each(|(_, v)| {
+        v.remove_child(node);
+        v.links.remove(node);
+    });
 }
 
 pub fn move_node(
@@ -82,7 +85,7 @@ pub fn move_node(
     } else {
         add_node_sibber(index, key, &mut node, position, is_front);
     }
-    if let Some(v) = index.get_mut(&node.parent.unwrap()){
+    if let Some(v) = index.get_mut(&node.parent.unwrap()) {
         v.remove_child(key);
     }
 }
@@ -98,24 +101,24 @@ pub fn add_link(index: &mut Index, a: &PathBuf, b: &PathBuf) {
     index.insert(b.to_owned(), b_node);
 }
 
-fn sys_to_chro(stime: &SystemTime) -> DateTime<Utc> {
+fn sys_to_chro(stime: &SystemTime) -> DateTime<Local> {
     let secs = 1 + stime
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap()
         .as_secs();
-    DateTime::<Utc>::from_utc(
+    DateTime::<Local>::from_utc(
         NaiveDateTime::from_timestamp_opt(secs as i64, 0).unwrap(),
-        Utc,
+        Local.timestamp_opt(0, 0).unwrap().offset().fix()
     )
 }
 
-fn ctime(path: &PathBuf) -> DateTime<Utc> {
+fn ctime(path: &PathBuf) -> DateTime<Local> {
     let file = fs::File::open(path).expect("can not open file");
     let ctime = file.metadata().unwrap().created().unwrap();
     sys_to_chro(&ctime)
 }
 
-fn mtime(path: &PathBuf) -> DateTime<Utc> {
+fn mtime(path: &PathBuf) -> DateTime<Local> {
     let file = fs::File::open(path).expect("can not open file");
     let ctime = file.metadata().unwrap().modified().unwrap();
     sys_to_chro(&ctime)
@@ -148,7 +151,7 @@ fn make_node(
     name: &String,
     path: &PathBuf,
     status: Option<Status>,
-    stime: Option<DateTime<Utc>>,
+    stime: Option<DateTime<Local>>,
 ) -> Node {
     Node {
         ctime: ctime(path),
@@ -179,11 +182,13 @@ fn add_node_sibber(
     let sibber_node = index.get(sibber).unwrap();
     let parent = sibber_node.parent.clone().unwrap();
     let mut parent_node = index.get(&parent).unwrap().to_owned();
-    let i = parent_node.get_child(sibber).unwrap();
-    if is_front {
-        parent_node.add_child(i, key);
-    } else {
-        parent_node.add_child(i + 1, key);
+    if let None = parent_node.get_child(key) {
+        let i = parent_node.get_child(sibber).unwrap();
+        if is_front {
+            parent_node.add_child(i, key);
+        } else {
+            parent_node.add_child(i + 1, key);
+        }
     }
     node.set_parent(&parent);
     node.set_parent(&parent);
@@ -199,10 +204,12 @@ fn add_node_parent(
     is_front: bool,
 ) {
     let mut parent_node = index.get(parent).expect("not eixst parent").to_owned();
-    if is_front {
-        parent_node.add_child(0, key);
-    } else {
-        parent_node.add_child(parent_node.child.len(), key);
+    if let None = parent_node.get_child(key) {
+        if is_front {
+            parent_node.add_child(0, key);
+        } else {
+            parent_node.add_child(parent_node.child.len(), key);
+        }
     }
     node.set_parent(parent);
     node.set_parent(parent);

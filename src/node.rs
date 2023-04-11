@@ -1,13 +1,13 @@
 use std::{collections::HashSet, path::PathBuf};
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Node {
-    pub ctime: DateTime<Utc>,
-    pub mtime: DateTime<Utc>,
-    pub stime: DateTime<Utc>,
+    pub ctime: DateTime<Local>,
+    pub mtime: DateTime<Local>,
+    pub stime: DateTime<Local>,
     pub path: PathBuf,
     pub child: Vec<PathBuf>,
     pub links: HashSet<PathBuf>,
@@ -53,7 +53,7 @@ impl Node {
     }
 
     pub fn is_root(&self) -> bool {
-        if let  None = self.parent{
+        if let None = self.parent {
             true
         } else {
             false
@@ -63,9 +63,9 @@ impl Node {
 
 pub fn root() -> Node {
     Node {
-        ctime: Utc::now(),
-        mtime: Utc::now(),
-        stime: Utc::now(),
+        ctime: Local::now(),
+        mtime: Local::now(),
+        stime: Local::now(),
         path: PathBuf::new().join("/"),
         child: Vec::new(),
         links: HashSet::new(),
