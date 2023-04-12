@@ -1,3 +1,4 @@
+use std::fmt::Write;
 use std::{collections::HashSet, path::PathBuf};
 
 use chrono::{DateTime, Local};
@@ -29,6 +30,22 @@ pub enum Status {
     Cancelled,
 }
 
+impl Status {
+    fn print(&self) -> &str {
+        match self {
+            Status::None => " ",
+            Status::Undone => "⏳",
+            Status::Done => "⌛",
+            Status::NeedWork => "",
+            Status::Urgent => "❗",
+            Status::Recurring => "🔃",
+            Status::Pending => "",
+            Status::Hold => "",
+            Status::Cancelled => "ﰸ",
+        }
+    }
+}
+
 impl Node {
     pub fn add_child(&mut self, i: usize, child: &PathBuf) {
         self.child.insert(i, child.to_owned())
@@ -58,6 +75,22 @@ impl Node {
         } else {
             false
         }
+    }
+
+    pub fn print(&self) -> String {
+        let mut temp = String::new();
+        writeln!(
+            temp,
+            "{}",
+            format!(
+                "{} {}  {}",
+                self.status.print(),
+                self.name,
+                self.path.to_str().unwrap()
+            )
+        )
+        .unwrap();
+        temp
     }
 }
 

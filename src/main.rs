@@ -1,7 +1,9 @@
 use std::{collections::HashMap, fs, path::PathBuf};
 
 use dodder::{
-    index::{add_link, add_node, move_node, read_index, remove_node, write_index},
+    index::{
+        add_link, add_node, move_node, print::print_tree, read_index, remove_node, write_index,
+    },
     node::{root, Status},
 };
 
@@ -80,12 +82,27 @@ fn main() {
         true,
         false,
     );
-    remove_node(
-        &mut index,
-        &PathBuf::new().join(".").join("src").join("index.rs"),
-    );
 
     write_index(&index);
+    for i in index.values() {
+        println!("{}", i.print());
+    }
+    println!(
+        "{}",
+        print_tree(
+            &index,
+            &PathBuf::new().join(".").join("src").join("lib.rs"),
+            2
+        )
+    );
+    println!(
+        "{}",
+        print_tree(
+            &index,
+            &PathBuf::new().join("/"),
+            0
+        )
+    )
 }
 
 fn init() {

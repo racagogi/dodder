@@ -1,12 +1,13 @@
+use std::io::Write;
 use std::{
     collections::{HashMap, HashSet},
     fs,
-    io::{BufReader, Read, Write},
+    io::{BufReader, Read},
     path::PathBuf,
     time::SystemTime,
 };
 
-use chrono::{DateTime, NaiveDateTime, Utc, Local, TimeZone, Offset};
+use chrono::{DateTime, Local, NaiveDateTime, Offset, TimeZone, Utc};
 
 use crate::node::{Node, Status};
 
@@ -101,6 +102,20 @@ pub fn add_link(index: &mut Index, a: &PathBuf, b: &PathBuf) {
     index.insert(b.to_owned(), b_node);
 }
 
+pub mod print {
+    use super::Index;
+    use std::{fmt::Write, path::PathBuf};
+    pub fn print_tree(index: &Index, key: &PathBuf, depth: usize) -> String {
+        let node = index.get(key).unwrap();
+        let mut temp = String::new();
+        write!(temp, "{}{}", String::from("\t").repeat(depth), node.print()).unwrap();
+        for i in node.child.iter() {
+            write!(temp, "{}", print_tree(index, i, depth + 1)).unwrap();
+        }
+        temp
+    }
+}
+
 fn sys_to_chro(stime: &SystemTime) -> DateTime<Local> {
     let secs = 1 + stime
         .duration_since(SystemTime::UNIX_EPOCH)
@@ -108,7 +123,7 @@ fn sys_to_chro(stime: &SystemTime) -> DateTime<Local> {
         .as_secs();
     DateTime::<Local>::from_utc(
         NaiveDateTime::from_timestamp_opt(secs as i64, 0).unwrap(),
-        Local.timestamp_opt(0, 0).unwrap().offset().fix()
+        Local.timestamp_opt(0, 0).unwrap().offset().fix(),
     )
 }
 
