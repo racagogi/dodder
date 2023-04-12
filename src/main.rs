@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fs, path::PathBuf};
 
 use dodder::{
-    index::{add_node, read_index, write_index, add_link, remove_node},
+    index::{add_link, add_node, move_node, read_index, remove_node, write_index},
     node::{root, Status},
 };
 
@@ -63,11 +63,29 @@ fn main() {
         false,
         true,
     );
-    add_link(&mut index, &PathBuf::new().join(".").join("src").join("index.rs"), &PathBuf::new().join(".").join("src").join("lib.rs"));
-    remove_node(&mut index, &PathBuf::new().join(".").join("src").join("index.rs"));
+    add_link(
+        &mut index,
+        &PathBuf::new().join(".").join("src").join("index.rs"),
+        &PathBuf::new().join(".").join("src").join("lib.rs"),
+    );
+    add_link(
+        &mut index,
+        &PathBuf::new().join(".").join("src").join("index.rs"),
+        &PathBuf::new().join(".").join("src").join("lib.rs"),
+    );
+    move_node(
+        &mut index,
+        &PathBuf::new().join(".").join("src").join("node.rs"),
+        &PathBuf::new().join(".").join("src").join("lib.rs"),
+        true,
+        false,
+    );
+    remove_node(
+        &mut index,
+        &PathBuf::new().join(".").join("src").join("index.rs"),
+    );
 
     write_index(&index);
-    println!("{index:?}");
 }
 
 fn init() {

@@ -80,13 +80,13 @@ pub fn move_node(
     is_parent: bool,
 ) {
     let mut node = index.get(key).expect("node not eixst").to_owned();
+    if let Some(v) = index.get_mut(node.parent.as_ref().unwrap()) {
+        v.remove_child(key);
+    }
     if is_parent {
         add_node_parent(index, key, &mut node, position, is_front);
     } else {
         add_node_sibber(index, key, &mut node, position, is_front);
-    }
-    if let Some(v) = index.get_mut(&node.parent.unwrap()) {
-        v.remove_child(key);
     }
 }
 
