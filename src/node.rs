@@ -8,13 +8,18 @@ use serde::{Deserialize, Serialize};
 pub struct Node {
     pub ctime: DateTime<Local>,
     pub mtime: DateTime<Local>,
-    pub stime: DateTime<Local>,
     pub path: PathBuf,
     pub child: Vec<PathBuf>,
     pub links: HashSet<PathBuf>,
     pub parent: Option<PathBuf>,
-    pub status: Status,
+    pub state: State,
     pub name: String,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct State {
+    pub status: Status,
+    pub stime: DateTime<Local>,
 }
 
 #[derive(Clone, Copy, Deserialize, Serialize, Debug)]
@@ -33,12 +38,12 @@ pub enum Status {
 impl Status {
     fn print(&self) -> &str {
         match self {
-            Status::None => " ",
-            Status::Undone => "⏳",
-            Status::Done => "⌛",
+            Status::None => "",
+            Status::Undone => "",
+            Status::Done => "",
             Status::NeedWork => "",
-            Status::Urgent => "❗",
-            Status::Recurring => "🔃",
+            Status::Urgent => "",
+            Status::Recurring => "",
             Status::Pending => "",
             Status::Hold => "",
             Status::Cancelled => "ﰸ",
@@ -59,6 +64,10 @@ impl Node {
         self.links.insert(link.to_owned());
     }
 
+    pub fn remove_link(&mut self, link: &PathBuf) {
+        self.links.remove(link);
+    }
+
     pub fn get_child(&self, child: &PathBuf) -> Option<usize> {
         self.child.iter().position(|x| x == child)
     }
@@ -77,18 +86,26 @@ impl Node {
         }
     }
 
-    pub fn print(&self) -> String {
+    pub fn print(&self, verbose: bool) -> String {
         let mut temp = String::new();
-        writeln!(
-            temp,
-            "{}",
-            format!(
-                "{} {}  {}",
-                self.status.print(),
-                self.name,
-                self.path.to_str().unwrap()
+        if verbose {
+            writeln!(
+                temp,
+                "{}",
+                format!(
+                    "{} {}  {}",
+                    self.state.status.print(),
+                    self.name,
+                    self.path.to_str().unwrap()
+                )
             )
-        )
+        } else {
+            writeln!(
+                temp,
+                "{}",
+                format!("{} {}", self.state.status.print(), self.name,)
+            )
+        }
         .unwrap();
         temp
     }
@@ -98,12 +115,18 @@ pub fn root() -> Node {
     Node {
         ctime: Local::now(),
         mtime: Local::now(),
-        stime: Local::now(),
         path: PathBuf::new().join("/"),
         child: Vec::new(),
         links: HashSet::new(),
         parent: None,
-        status: Status::None,
+        state: State {
+            status: Status::None,
+            stime: Local::now(),
+        },
         name: "root".to_string(),
     }
+}
+
+pub fn root_path() -> PathBuf {
+    PathBuf::new().join("/")
 }

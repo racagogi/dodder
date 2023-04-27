@@ -1,108 +1,56 @@
 use std::{collections::HashMap, fs, path::PathBuf};
 
 use dodder::{
-    index::{
-        add_link, add_node, move_node, print::print_tree, read_index, remove_node, write_index,
-    },
-    node::{root, Status},
+    index::{FilePath::{Extension, Path}, Index, Position, Tree},
+    node::{root, root_path},
 };
 
 fn main() {
     init();
-    let mut index = read_index();
-    add_node(
-        &mut index,
+    let mut index = Tree::read_index();
+    index.add_node(
+        "test",
         None,
-        &"toc".to_string(),
-        "norg",
-        Some(Status::Recurring),
-        None,
-        &PathBuf::new().join("/"),
-        true,
-        true,
+        Extension("norg".to_string()),
+        &Position {
+            position: root_path(),
+            is_front: true,
+            is_parent: true,
+        },
     );
-    add_node(
-        &mut index,
-        Some(&PathBuf::new().join(".").join("src").join("main.rs")),
-        &"main".to_string(),
-        "md",
+    index.add_node(
+        "test",
         None,
+        Path(PathBuf::from("./src/main.rs")),
+        &Position {
+            position: root_path(),
+            is_front: true,
+            is_parent: true,
+        },
+    );
+    index.add_node(
+        "to do",
         None,
-        &PathBuf::new().join("/"),
-        false,
-        true,
+        Extension("norg".to_string()),
+        &Position {
+            position: root_path(),
+            is_front: true,
+            is_parent: true,
+        },
     );
-    add_node(
-        &mut index,
-        Some(&PathBuf::new().join(".").join("src").join("lib.rs")),
-        &"index".to_string(),
-        "py",
+    index.add_node(
+        "undo",
         None,
-        None,
-        &PathBuf::new().join("/"),
-        false,
-        true,
+        Extension("norg".to_string()),
+        &Position {
+            position: root_path(),
+            is_front: true,
+            is_parent: true,
+        },
     );
-    add_node(
-        &mut index,
-        Some(&PathBuf::new().join(".").join("src").join("index.rs")),
-        &"index".to_string(),
-        "md",
-        None,
-        None,
-        &PathBuf::new().join(".").join("src").join("lib.rs"),
-        false,
-        true,
-    );
-    add_node(
-        &mut index,
-        Some(&PathBuf::new().join(".").join("src").join("node.rs")),
-        &"node".to_string(),
-        "md",
-        None,
-        None,
-        &PathBuf::new().join(".").join("src").join("index.rs"),
-        false,
-        true,
-    );
-    add_link(
-        &mut index,
-        &PathBuf::new().join(".").join("src").join("index.rs"),
-        &PathBuf::new().join(".").join("src").join("lib.rs"),
-    );
-    add_link(
-        &mut index,
-        &PathBuf::new().join(".").join("src").join("index.rs"),
-        &PathBuf::new().join(".").join("src").join("lib.rs"),
-    );
-    move_node(
-        &mut index,
-        &PathBuf::new().join(".").join("src").join("node.rs"),
-        &PathBuf::new().join(".").join("src").join("lib.rs"),
-        true,
-        false,
-    );
-
-    write_index(&index);
-    for i in index.values() {
-        println!("{}", i.print());
-    }
-    println!(
-        "{}",
-        print_tree(
-            &index,
-            &PathBuf::new().join(".").join("src").join("lib.rs"),
-            2
-        )
-    );
-    println!(
-        "{}",
-        print_tree(
-            &index,
-            &PathBuf::new().join("/"),
-            0
-        )
-    )
+    index.remove_node(&PathBuf::from("./src/main.rs"));
+    index.write_index();
+    println!("{}",index.print(&root_path(), 0, true));
 }
 
 fn init() {
@@ -115,6 +63,6 @@ fn init() {
         fs::create_dir(&data_path).unwrap();
         let mut index = HashMap::new();
         index.insert(PathBuf::new().join("/"), root());
-        write_index(&index);
+        index.write_index();
     }
 }
