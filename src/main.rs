@@ -1,4 +1,4 @@
-use dodder::cli;
+use dodder::{cli, command};
 
 fn main() {
     let matches = cli::cli();
@@ -28,6 +28,12 @@ fn main() {
         Some(("move", move_mathces)) => {
             println!("time {:?}", move_mathces.get_one::<String>("time"));
             println!("name {:?}", move_mathces.get_one::<String>("naem"));
+        }
+        Some(("print", print_mathces)) => {
+            let from = print_mathces.get_one::<String>("from");
+            let verbose = print_mathces.get_one::<bool>("verbose").unwrap();
+            let print = command::print(&from, verbose.to_owned());
+            println!("{print}");
         }
         _ => unreachable!(),
     }

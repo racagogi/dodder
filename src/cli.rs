@@ -86,5 +86,28 @@ pub fn cli() -> clap::ArgMatches {
                 .arg(Arg::new("name").short('n'))
                 .arg(Arg::new("status").short('s')),
         )
+        .subcommand(
+            Command::new("move")
+                .arg(Arg::new("from").short('f'))
+                .arg(Arg::new("to").short('t'))
+                .arg(
+                    Arg::new("sibber")
+                        .short('b')
+                        .help("set position as sibber")
+                        .num_args(0),
+                )
+                .arg(
+                    Arg::new("last")
+                        .short('l')
+                        .help("insert last position")
+                        .num_args(0),
+                ),
+        )
+        .subcommand(
+            Command::new("print")
+                .arg(Arg::new("from").short('f'))
+                .arg(Arg::new("verbose").short('v').num_args(0)),
+        )
+        .subcommand(Command::new("init"))
         .get_matches()
 }
