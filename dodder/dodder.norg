@@ -1,0 +1,104 @@
+@document.meta
+title: dodder
+description: dodder description
+authors: raca
+created: 2023-05-08
+updated: 2023-05-09
+version: 1.1.1
+@end
+
+* dodder
+  dodder is a new orgnize tool implyied by {https://github.com/phaazon/mind.nvim}[mind.nvim].
+** workplcses
+  this tool deal to workplcses
+  - global
+    global workplcse is only one exist.
+  - local
+    local workplcse can exist each directory.
+    each workplcse can exist each folder
+** .dodder
+  dodder makes `.dodder` folder to control directory
+  `.dodder` compose flow
+   - index.json
+    save node
+   #option
+   - config.toml
+    contig dodder locally
+   - data
+    dodder generate leaf file
+** tree, node and leaf
+   - tree is a abstart hiretural layer of files for dodder
+   - node is a node save with file path and meta data
+     node metadata is folloing
+   -- file generate file
+   -- file modfied time
+   -- file message
+   -- file path
+   -- file state
+   --- file status
+       GTD
+   #option
+   --- file state time
+       it can be due or durition for recall
+
+   -- linked files
+   #option
+   - leaf file
+     it is generate meta file for explain some nodes
+** node funtion
+*** print
+    #arguments
+    - verbose
+    - level
+*** add_node
+    #arguments
+    +option
+    - file
+    if None then generate leaf file
+    +option
+    - state
+    if None set default file
+    - message
+      a message or title of node
+*** add_link
+    #arguments
+    + node
+    add antoher node to link
+*** delete_node
+    #arguments
+    - recursive
+      if false, child node will be child of parents
+*** delete_link
+    #arguments
+    - node
+      delete node key
+*** change_node_state
+    #arguments
+    - state
+      change state
+*** change_node_message
+    #arguments
+    - message
+      new message
+*** make_leaf
+    generate new leaf file
+** tree funtion
+*** read_config
+    read config file
+*** set_config
+    set config file
+*** read_tree
+    read tree from index.json
+*** write_tree
+    write tree to index.json
+*** print
+    print tree level
+*** excute_node
+    #arguments
+    - node
+    - method
+** search funtion
+*** find name
+*** find due
+*** find link
+*** find meta

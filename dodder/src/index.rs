@@ -28,13 +28,7 @@ pub struct Position {
 pub trait Index {
     fn read_index() -> Tree;
     fn write_index(&self);
-    fn add_node(
-        &mut self,
-        name: &str,
-        state: Option<State>,
-        path: FilePath,
-        position: &Position,
-    );
+    fn add_node(&mut self, name: &str, state: Option<State>, path: FilePath, position: &Position);
     fn remove_node(&mut self, node: &PathBuf);
     fn move_node(&mut self, key: &PathBuf, position: &Position);
     fn add_link(&mut self, a: &PathBuf, b: &PathBuf);
@@ -71,13 +65,7 @@ impl Index for Tree {
         io::Write::flush(&mut file).unwrap();
     }
 
-    fn add_node(
-        &mut self,
-        name: &str,
-        state: Option<State>,
-        path: FilePath,
-        position: &Position,
-    ) {
+    fn add_node(&mut self, name: &str, state: Option<State>, path: FilePath, position: &Position) {
         let path = ensure_path(path, name);
         let mut node = make_node(name, &path, state);
         if position.is_parent {
