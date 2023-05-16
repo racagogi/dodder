@@ -3,7 +3,7 @@ title: dodder
 description: dodder description
 authors: raca
 created: 2023-05-08
-updated: 2023-05-09
+updated: 2023-05-16
 version: 1.1.1
 @end
 
@@ -12,15 +12,17 @@ version: 1.1.1
 ** workplcses
   this tool deal to workplcses
   - global
-    global workplcse is only one exist.
+    global workplcse exist only one.
+    dir `XDG_CONFIG/dodder`
   - local
     local workplcse can exist each directory.
     each workplcse can exist each folder
+    dir `PWD/.dodder`
 ** .dodder
   dodder makes `.dodder` folder to control directory
   `.dodder` compose flow
    - index.json
-    save node
+     save node metadata
    #option
    - config.toml
     contig dodder locally
@@ -97,8 +99,8 @@ version: 1.1.1
     #arguments
     - node
     - method
-** search funtion
-*** find name
-*** find due
-*** find link
-*** find meta
+*** search funtion
+**** find name
+**** find due
+**** find link
+**** find meta
