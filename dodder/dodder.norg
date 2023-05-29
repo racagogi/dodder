@@ -3,7 +3,7 @@ title: dodder
 description: dodder description
 authors: raca
 created: 2023-05-08
-updated: 2023-05-16
+updated: 2023-05-29
 version: 1.1.1
 @end
 
@@ -12,11 +12,11 @@ version: 1.1.1
 ** workplcses
   this tool deal to workplcses
   - global
-    global workplcse exist only one.
-    dir `XDG_CONFIG/dodder`
+   -- global workplcse exist only one.
+   -- dir `XDG_CONFIG/dodder`
   - local
-    local workplcse can exist each directory.
-    each workplcse can exist each folder
+   -- local workplcse can exist each directory.
+      each workplcse can exist each folder
     dir `PWD/.dodder`
 ** .dodder
   dodder makes `.dodder` folder to control directory
@@ -31,22 +31,27 @@ version: 1.1.1
 ** tree, node and leaf
    - tree is a abstart hiretural layer of files for dodder
    - node is a node save with file path and meta data
-     node metadata is folloing
-   -- file generate file
-   -- file modfied time
-   -- file message
-   -- file path
-   -- file state
-   --- file status
-       GTD
-   #option
-   --- file state time
-       it can be due or durition for recall
-
+     node metadata is following
+   -- ctime
+      file generate time
+   -- mtime
+      file modfied time
+   -- message
+      file message
+   -- path
+      file path
+   -- state
+      file state
    -- linked files
-   #option
-   - leaf file
+   --- gtd
+       file status
+       GTD
+   - leafs
      it is generate meta file for explain some nodes
+   #option
+   --- stime
+       file state time
+       it can be due or durition for recall
 ** node funtion
 *** print
     #arguments

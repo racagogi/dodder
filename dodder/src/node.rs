@@ -9,7 +9,7 @@ pub struct Node {
     pub ctime: DateTime<Local>,
     pub mtime: DateTime<Local>,
     pub path: PathBuf,
-    pub child: Vec<PathBuf>,
+    pub leafs: Vec<PathBuf>,
     pub links: HashSet<PathBuf>,
     pub parent: Option<PathBuf>,
     pub state: State,
@@ -18,7 +18,7 @@ pub struct Node {
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct State {
-    pub status: Status,
+    pub gtd: Status,
     pub stime: DateTime<Local>,
 }
 
@@ -53,7 +53,7 @@ impl Status {
 
 impl Node {
     pub fn add_child(&mut self, i: usize, child: &PathBuf) {
-        self.child.insert(i, child.to_owned())
+        self.leafs.insert(i, child.to_owned())
     }
 
     pub fn set_parent(&mut self, parent: &PathBuf) {
@@ -68,13 +68,13 @@ impl Node {
         self.links.remove(link);
     }
 
-    pub fn get_child(&self, child: &PathBuf) -> Option<usize> {
-        self.child.iter().position(|x| x == child)
+    pub fn get_child(&self, leaf: &PathBuf) -> Option<usize> {
+        self.leafs.iter().position(|x| x == leaf)
     }
 
     pub fn remove_child(&mut self, child: &PathBuf) {
         if let Some(i) = self.get_child(child) {
-            self.child.remove(i);
+            self.leafs.remove(i);
         }
     }
 
@@ -94,7 +94,7 @@ impl Node {
                 "{}",
                 format!(
                     "{} {}  {}",
-                    self.state.status.print(),
+                    self.state.gtd.print(),
                     self.name,
                     self.path.to_str().unwrap()
                 )
@@ -103,7 +103,7 @@ impl Node {
             writeln!(
                 temp,
                 "{}",
-                format!("{} {}", self.state.status.print(), self.name,)
+                format!("{} {}", self.state.gtd.print(), self.name,)
             )
         }
         .unwrap();
@@ -116,11 +116,11 @@ pub fn root() -> Node {
         ctime: Local::now(),
         mtime: Local::now(),
         path: PathBuf::new().join("/"),
-        child: Vec::new(),
+        leafs: Vec::new(),
         links: HashSet::new(),
         parent: None,
         state: State {
-            status: Status::None,
+            gtd: Status::None,
             stime: Local::now(),
         },
         name: "root".to_string(),

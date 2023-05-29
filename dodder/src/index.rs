@@ -89,7 +89,7 @@ impl Index for Tree {
 
     fn remove_node(&mut self, node: &PathBuf) {
         if let Some(parent) = self.remove(node) {
-            for c in parent.child.iter() {
+            for c in parent.leafs.iter() {
                 self.remove_node(c)
             }
         }
@@ -143,7 +143,7 @@ impl Index for Tree {
             node.print(verbose)
         )
         .unwrap();
-        for i in node.child.iter() {
+        for i in node.leafs.iter() {
             write!(temp, "{}", self.print(i, depth + 1, verbose)).unwrap();
         }
         temp
@@ -201,16 +201,16 @@ fn make_node(name: &str, path: &PathBuf, state: Option<State>) -> Node {
         ctime: ctime(path),
         mtime: mtime(path),
         path: path.to_owned(),
-        child: Vec::new(),
+        leafs: Vec::new(),
         links: HashSet::new(),
         parent: None,
         state: match state {
             Some(s) => State {
-                status: s.status,
+                gtd: s.gtd,
                 stime: s.stime,
             },
             None => State {
-                status: Status::None,
+                gtd: Status::None,
                 stime: Local::now(),
             },
         },
@@ -254,7 +254,7 @@ fn add_node_parent(
         if is_front {
             parent_node.add_child(0, key);
         } else {
-            parent_node.add_child(parent_node.child.len(), key);
+            parent_node.add_child(parent_node.leafs.len(), key);
         }
     }
     node.set_parent(parent);
