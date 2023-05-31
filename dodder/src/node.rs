@@ -38,11 +38,11 @@ pub enum Status {
 impl Status {
     fn print(&self) -> &str {
         match self {
-            Status::None => "",
-            Status::Undone => "",
-            Status::Done => "",
-            Status::NeedWork => "",
-            Status::Urgent => "",
+            Status::None => "󰄱",
+            Status::Undone => "󰄮",
+            Status::Done => "󰄲",
+            Status::NeedWork => "󰱒",
+            Status::Urgent => "⚠",
             Status::Recurring => "",
             Status::Pending => "",
             Status::Hold => "",
