@@ -1,6 +1,7 @@
-use std::{fs, println};
+use std::collections::HashSet;
+use std::fmt::Write;
+use std::fs;
 use std::path::PathBuf;
-use std::{collections::HashSet, fmt::Write};
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -9,16 +10,24 @@ use crate::config::{Config, CGTD};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Leaf {
+    leafdata: LeafData,
     visible: bool,
+    childs: Vec<Index>,
+    links: HashSet<Index>,
+    index: Index,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct LeafData {
     message: String,
     gtd: GTD,
     path: PathBuf,
     ctime: DateTime<Utc>,
     mtime: DateTime<Utc>,
     stime: DateTime<Utc>,
-    links: HashSet<PathBuf>,
 }
 
+pub type Index = usize;
 #[derive(Clone, Copy, Deserialize, Serialize, Debug)]
 pub enum GTD {
     None,
@@ -76,6 +85,51 @@ impl GTD {
 }
 
 impl Leaf {
+    pub fn new(leafdata: LeafData, index: Index) -> Leaf {
+        Leaf {
+            leafdata,
+            visible: false,
+            childs: Vec::new(),
+            links: HashSet::new(),
+            index,
+        }
+    }
+    pub fn get_index(&self) -> Index {
+        self.index
+    }
+
+    pub fn get_childs(&self) -> Vec<Index> {
+        self.childs.to_owned()
+    }
+
+    pub fn get_links(&self) -> HashSet<Index> {
+        self.links.to_owned()
+    }
+
+    pub fn add_child(&mut self, is_first: bool, index: Index) {
+        if is_first {
+            self.childs.insert(0, index);
+        } else {
+            self.childs.push(index);
+        }
+    }
+
+    pub fn remove_child(&mut self, index: Index) {
+        if let Some(i) = self.childs.iter().position(|&x| x == index) {
+            self.childs.remove(i);
+        }
+    }
+
+    pub fn add_link(&mut self, index: Index) {
+        self.links.insert(index);
+    }
+
+    pub fn remove_link(&mut self, index: Index) {
+        self.links.remove(&index);
+    }
+}
+
+impl LeafData {
     pub fn new(
         message: &str,
         path: Option<PathBuf>,
@@ -83,34 +137,27 @@ impl Leaf {
         stime: DateTime<Utc>,
         is_global: bool,
         config: &Config,
-    ) -> Leaf {
+    ) -> LeafData {
         match path {
-            Some(p) => Leaf {
-                visible: false,
+            Some(p) => LeafData {
                 message: message.to_string(),
                 gtd,
                 path: p,
                 ctime: Utc::now(),
                 mtime: Utc::now(),
                 stime,
-                links: HashSet::new(),
             },
-            None => Leaf {
-                visible: false,
+            None => LeafData {
                 message: message.to_string(),
                 gtd,
                 path: make_file(message, is_global, config),
                 ctime: Utc::now(),
                 mtime: Utc::now(),
                 stime,
-                links: HashSet::new(),
             },
         }
     }
 
-    pub fn tooggle_visiblity(&mut self) {
-        self.visible = !self.visible;
-    }
     pub fn set_message(&mut self, message: &str) {
         self.message = message.to_string();
     }
@@ -118,10 +165,6 @@ impl Leaf {
     pub fn set_status(&mut self, gtd: GTD, stime: DateTime<Utc>) {
         self.gtd = gtd;
         self.stime = stime;
-    }
-
-    pub fn add_link(&mut self, link: PathBuf) -> bool {
-        self.links.insert(link)
     }
 
     pub fn update_time(&mut self) {
@@ -151,7 +194,6 @@ fn make_file(message: &str, is_global: bool, config: &Config) -> PathBuf {
     } else {
         PathBuf::new().join(".").join(".dodder").join("data")
     };
-    println!("{:?}",path);
     fs::create_dir_all(&path).unwrap();
     let file_path = path.join(file_name);
     fs::File::create(&file_path).expect("can nopt make file");

@@ -126,7 +126,7 @@ mod tests {
     fn parse_config() {
         let config = toml::from_str::<Config>(
             r#"
-        extenstion = "norg"
+        extension = "norg"
         global = "~/.local/share/tree"
         [symbol]
         none = ''
@@ -145,11 +145,10 @@ mod tests {
         Config::new();
         let config = Config::read();
         assert_eq!(config.symbol, None);
-        assert_eq!(config.global, None);
         assert_eq!(config.extension, None);
         assert_eq!(
             config.get_global_path(),
-            PathBuf::from("~/.local/share/dodder")
+            PathBuf::new().join(dirs::data_dir().unwrap()).join("dodder")
         );
     }
 }
