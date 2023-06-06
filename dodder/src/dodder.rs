@@ -16,9 +16,11 @@ use crate::{
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Dodder {
     tree: HashMap<Index, Leaf>,
-    index: Vec<Index>,
+    index: Vec<(Index, Level)>,
     max_index: Index,
 }
+
+type Level = usize;
 
 impl Dodder {
     pub fn new(is_global: bool, config: &Config) -> Dodder {
@@ -28,7 +30,7 @@ impl Dodder {
         tree.insert(0, root);
         Dodder {
             tree,
-            index: vec![0],
+            index: vec![(0, 0)],
             max_index: 0,
         }
     }
@@ -80,16 +82,16 @@ impl Dodder {
         }
     }
 
-    fn dfs(&self, index: Index) -> Vec<Index> {
+    fn dfs(&self, index: Index, level: Level) -> Vec<(Index, Level)> {
         let leaf = self.tree.get(&index).unwrap();
         let childs = leaf.get_childs();
         let mut temp = Vec::new();
-        temp.push(index);
+        temp.push((index, level));
         if childs.is_empty() {
             temp
         } else {
             for i in childs {
-                temp.append(&mut self.dfs(i));
+                temp.append(&mut self.dfs(i, level + 1));
             }
             temp
         }
@@ -107,7 +109,7 @@ impl Dodder {
         let leaf = Leaf::new(leafdata, index);
         self.tree.insert(index, leaf);
         self.tree.insert(parent, parent_leaf);
-        self.index = self.dfs(0);
+        self.index = self.dfs(0, 0);
     }
 
     pub fn add_child_last(&mut self, leafdata: LeafData, parent: Index) {
@@ -118,7 +120,7 @@ impl Dodder {
         let leaf = Leaf::new(leafdata, index);
         self.tree.insert(index, leaf);
         self.tree.insert(parent, parent_leaf);
-        self.index = self.dfs(0);
+        self.index = self.dfs(0, 0);
     }
 
     pub fn add_link(&mut self, from: Index, to: Index) {
@@ -144,7 +146,7 @@ impl Dodder {
         parent_leaf.remove_child(child);
         self.tree.insert(parent, parent_leaf);
         self.remove_leaf(child);
-        self.index = self.dfs(0);
+        self.index = self.dfs(0, 0);
     }
 
     fn remove_leaf(&mut self, index: Index) {
@@ -158,5 +160,19 @@ impl Dodder {
         for i in leaf_childs {
             self.remove_leaf(i);
         }
+    }
+
+    pub fn print(&self, config: &Config) {
+        let mut temp = String::new();
+        for (i, v) in &self.index {
+            let leaf = self.get_leaf(*i);
+            if leaf.get_visible() {
+                std::fmt::Write::write_fmt(
+                    &mut temp,
+                    format_args!("{}{}\n", "  ".repeat(*v), leaf.print(config)),
+                ).unwrap();
+            }
+        }
+        println!("{temp}");
     }
 }

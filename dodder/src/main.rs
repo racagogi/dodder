@@ -2,8 +2,8 @@ use chrono::Utc;
 use dodder::{config::Config, dodder::Dodder, leaf::LeafData};
 
 fn main() {
+    Config::new();
     let config = Config::read();
-    println!("{:?}", config);
     let mut dodder = Dodder::read(true);
     let temp1 = LeafData::new(
         "temp1",
@@ -35,5 +35,6 @@ fn main() {
     dodder.add_link(0, 3);
     dodder.add_link(1, 2);
     dodder.remove_link(0, 1);
+    dodder.print(&config);
     dodder.write(true);
 }

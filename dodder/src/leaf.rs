@@ -88,7 +88,7 @@ impl Leaf {
     pub fn new(leafdata: LeafData, index: Index) -> Leaf {
         Leaf {
             leafdata,
-            visible: false,
+            visible: true,
             childs: Vec::new(),
             links: HashSet::new(),
             index,
@@ -104,6 +104,10 @@ impl Leaf {
 
     pub fn get_links(&self) -> HashSet<Index> {
         self.links.to_owned()
+    }
+
+    pub fn get_visible(&self) -> bool {
+        self.visible
     }
 
     pub fn add_child(&mut self, is_first: bool, index: Index) {
@@ -126,6 +130,14 @@ impl Leaf {
 
     pub fn remove_link(&mut self, index: Index) {
         self.links.remove(&index);
+    }
+
+    pub fn toggle_visible(&mut self) {
+        self.visible = !self.visible;
+    }
+
+    pub fn print(&self, config: &Config) -> String {
+        self.leafdata.print(config.get_symbols())
     }
 }
 
